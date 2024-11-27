@@ -1,4 +1,5 @@
 import logging
+import os
 
 import allure
 import requests
@@ -6,12 +7,10 @@ from allure_commons._allure import step
 from allure_commons.types import AttachmentType
 from selene import browser, have
 
-base_url = "https://demowebshop.tricentis.com/"
-
 
 def demowebshop_api_post(url, **kwargs):
     with step("API Requset"):
-        response = requests.post(base_url + url, **kwargs)
+        response = requests.post("https://demowebshop.tricentis.com/" + url, **kwargs)
         allure.attach(
             body=response.text,
             name="Response",
@@ -32,11 +31,11 @@ def demowebshop_api_post(url, **kwargs):
     return response
 
 
-def test_add_product_authorized_user():
+def test_add_product_authorized_user(setup_browser):
     with allure.step("получить авторизационную куку используя апи"):
         payload = {
-            "Email": "premio1986@rambler.ru",
-            "Password": "123456",
+            "Email": os.getenv("LOGIN"),
+            "Password": os.getenv("PASSWORD"),
             "RememberMe": True
         }
         response = demowebshop_api_post("login", data=payload, allow_redirects=False)
@@ -46,7 +45,7 @@ def test_add_product_authorized_user():
         demowebshop_api_post("addproducttocart/catalog/31/1/1", cookies={"NOPCOMMERCE.AUTH": cookie})
 
     with allure.step("Открыть корзину в браузере и проверить, что товар добавлен"):
-        browser.open(base_url + "cart")
+        browser.open("cart")
         browser.driver.add_cookie({"name": "NOPCOMMERCE.AUTH", "value": cookie})
-        browser.open(base_url + "cart")
+        browser.open("cart")
         browser.element('//a[@class="product-name"]').should(have.text("14.1-inch Laptop"))

@@ -1,3 +1,5 @@
+import logging
+
 import allure
 import requests
 from allure_commons._allure import step
@@ -25,6 +27,8 @@ def demowebshop_api_post(url, **kwargs):
             name="Request headers",
             attachment_type=AttachmentType.TEXT,
             extension="txt")
+        logging.info(response.status_code)
+        logging.info(response.url)
     return response
 
 
